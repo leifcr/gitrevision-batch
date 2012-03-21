@@ -2,9 +2,13 @@
 
 You need to have 'sed' and 'git' installed in order for this script to work.
 
+
 Your git tags must be in format v1.0.123
+
 1 is major version
+
 0 is minor version
+
 123 is revision number
 
 ## Usage 
@@ -18,6 +22,7 @@ Your git tags must be in format v1.0.123
 </pre>
 
 Parameters changed in input file:
+
 * $MAJOR_VERSION$ - the major version number
 * $MINOR_VERSION$ - the minor version number
 * $REVISION$ - the revision number
