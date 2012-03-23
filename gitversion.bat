@@ -2,6 +2,22 @@
 @pushd .
 @Setlocal enabledelayedexpansion
 @set exit_code=0
+
+IF %PROCESSOR_ARCHITECTURE% == x86 (
+  IF DEFINED PROCESSOR_ARCHITEW6432 (
+    set git_bin:\+="%ProgramFiles(x86)%\git\bin"
+  ) ELSE (
+    set git_bin="%ProgramFiles%\git\bin"
+  )
+) ELSE IF %PROCESSOR_ARCHITECTURE% == AMD64 (
+    set git_bin="%ProgramFiles(x86)%\git\bin"
+    ) ELSE (
+  set git_bin="%ProgramFiles%\git\bin"
+)
+@REM Remove qoutes
+@SET git_bin=!git_bin:"=!
+:: " quote to make Sublime Text happy...
+
 @echo ------------------------------------
 @echo    Git version processing
 @echo ------------------------------------
@@ -18,12 +34,13 @@ IF [%1] EQU [] (
 )
 :: verify that .git exists within given directory
 IF EXIST %1 (
-  IF NOT EXIST "%1\.git" (
+  "!git_bin!\git.exe" describe --tags
+  IF %ERRORLEVEL% NEQ 0 (
     @echo ===-------------------------------------------===
     @echo   ERROR: No git repository in given directory.
     @echo ===-------------------------------------------===
     @SET exit_code=1
-    @GOTO FINITO
+    GOTO FINITO
   )
 ) ELSE (
   @echo ===-------------------------------------------===
@@ -76,6 +93,9 @@ IF [%3] EQU [%2] (
   @SET exit_code=1
   @GOTO FINITO
  )
+GOTO PROCESSING
+
+:GO_FOLDER_UP_IF_NOT_ROOT
 
 :PROCESSING
 @echo ------------------------------------------------------------------------------------------
@@ -85,20 +105,6 @@ IF [%3] EQU [%2] (
 @echo -   output to file       : %3
 @echo ------------------------------------------------------------------------------------------
 
-IF %PROCESSOR_ARCHITECTURE% == x86 (
-  IF DEFINED PROCESSOR_ARCHITEW6432 (
-    set git_bin:\+="%ProgramFiles(x86)%\git\bin\"
-  ) ELSE (
-    set git_bin="%ProgramFiles%\git\bin\"
-  )
-) ELSE IF %PROCESSOR_ARCHITECTURE% == AMD64 (
-    set git_bin="%ProgramFiles(x86)%\git\bin\"
-    ) ELSE (
-  set git_bin="%ProgramFiles%\git\bin\"
-)
-@REM Remove qoutes
-@SET git_bin=!git_bin:"=!
-:: " quote to make Sublime Text happy...
 
 CD %1
 :: To get latest abbriviated hash from git
@@ -107,7 +113,7 @@ CD %1
 :: git describe --tags
 :: git describe --tags --long | sed "s/v\([0-9]*\).*/\1/"'
 
-FOR /F "tokens=1 delims=" %%A in ('git describe --tags --long') do SET current_tag=%%A
+FOR /F "tokens=1 delims=" %%A in ('"!git_bin!\git.exe" describe --tags --long') do SET current_tag=%%A
 ::!current_tag! 
 echo Current Tag:       !current_tag!
 FOR /F "tokens=1 delims=" %%A in ('echo !current_tag! ^| sed "s/\(v[0-9]*\.[0-9]*\.[0-9]*\)-[0-9]*-g.*/\1/"') do SET tag_only=%%A
@@ -122,7 +128,8 @@ FOR /F "tokens=1 delims=" %%A in ('echo !current_tag! ^| sed "s/v[0-9]*\.[0-9]*\
 echo Commits since tag: !commits_since_tag!
 FOR /F "tokens=1 delims=" %%A in ('echo !current_tag! ^| sed "s/v[0-9]*\.[0-9]*\.[0-9]*-[0-9]*-g\(.*\)/\1/"') do SET git_hash=%%A
 echo Git Hash:          !git_hash!
-FOR /F "tokens=1 delims=" %%A in ('git describe !tag_only! --tags --long ^| sed "s/v[0-9]*\.[0-9]*\.[0-9]*-[0-9]*-g\(.*\)/\1/"') do SET git_tag_hash=%%A
+FOR /F "tokens=1 delims=" %%A in ('"!git_bin!\git.exe" describe !tag_only! --tags --long') do SET git_tag_complete_with_hash=%%A
+FOR /F "tokens=1 delims=" %%A in ('echo !git_tag_complete_with_hash! ^| sed "s/v[0-9]*\.[0-9]*\.[0-9]*-[0-9]*-g\(.*\)/\1/"') do SET git_tag_hash=%%A
 echo Git Tag Hash:      !git_tag_hash!
 
 :: Replace parameters in file using sed
