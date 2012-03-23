@@ -5,7 +5,7 @@
 
 IF %PROCESSOR_ARCHITECTURE% == x86 (
   IF DEFINED PROCESSOR_ARCHITEW6432 (
-    set git_bin:\+="%ProgramFiles(x86)%\git\bin"
+    set git_bin="%ProgramFiles(x86)%\git\bin"
   ) ELSE (
     set git_bin="%ProgramFiles%\git\bin"
   )
