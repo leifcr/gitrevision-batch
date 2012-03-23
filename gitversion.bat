@@ -151,6 +151,6 @@ echo Git Tag Hash:      !git_tag_hash!
 @echo --------------------------------------------------------------------------------------
 
 :FINITO
-@EndLocal
+@EndLocal&SET exit_code=!exit_code!
 @popd
 @exit /B !exit_code!
