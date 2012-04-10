@@ -1,7 +1,7 @@
 @echo off
 @pushd .
-@Setlocal enabledelayedexpansion
-@set exit_code=0
+SETlocal enabledelayedexpansion
+set exit_code=0
 
 IF %PROCESSOR_ARCHITECTURE% == x86 (
   IF DEFINED PROCESSOR_ARCHITEW6432 (
@@ -14,8 +14,8 @@ IF %PROCESSOR_ARCHITECTURE% == x86 (
     ) ELSE (
   set git_bin="%ProgramFiles%\git\bin"
 )
-@REM Remove qoutes
-@SET git_bin=!git_bin:"=!
+:: Remove qoutes
+SET git_bin=!git_bin:"=!
 :: " quote to make Sublime Text happy...
 
 @echo ------------------------------------
@@ -29,8 +29,8 @@ IF [%1] EQU [] (
   @echo ===-------------------------------------------===----------
   @echo   ERROR: Missing Git repo directory 
   @echo ===-------------------------------------------===
-  @SET exit_code=1
-  @GOTO USAGE
+  SET exit_code=1
+  GOTO USAGE
 )
 :: verify that .git exists within given directory
 IF EXIST %1 (
@@ -39,15 +39,15 @@ IF EXIST %1 (
     @echo ===-------------------------------------------===
     @echo   ERROR: No git repository in given directory.
     @echo ===-------------------------------------------===
-    @SET exit_code=1
+    SET exit_code=1
     GOTO FINITO
   )
 ) ELSE (
   @echo ===-------------------------------------------===
   @echo   ERROR: Missing Git repo directory 
   @echo ===-------------------------------------------===
-  @SET exit_code=1
-  @GOTO USAGE
+  SET exit_code=1
+  GOTO USAGE
 )
 
 :: Preprocessing parameter 2
@@ -56,8 +56,8 @@ IF [%2] EQU [] (
   @echo ===-------------------------------------------===
   @echo   ERROR: Missing Input filename 
   @echo ===-------------------------------------------===
-  @SET exit_code=1
-  @GOTO USAGE
+  SET exit_code=1
+  GOTO USAGE
 )
 
 :: verify that input file exists
@@ -65,8 +65,8 @@ IF NOT EXIST %2 (
   @echo ===-------------------------------------------===
   @echo   ERROR: Input file does not exist
   @echo ===-------------------------------------------===
-  @SET exit_code=1
-  @GOTO FINITO
+  SET exit_code=1
+  GOTO FINITO
 )
 
 :: Preprocessing parameter 3
@@ -75,8 +75,8 @@ IF [%3] EQU [] (
   @echo ===-------------------------------------------===
   @echo   ERROR: Missing Output filename 
   @echo ===-------------------------------------------===
-  @SET exit_code=1
-  @GOTO USAGE
+  SET exit_code=1
+  GOTO USAGE
 )
 :: if output file exists, just warn about it
 IF EXIST %3 (
@@ -90,8 +90,8 @@ IF [%3] EQU [%2] (
   @echo ===-------------------------------------------===
   @echo   ERROR: Input and ouput filename is equal.
   @echo ===-------------------------------------------===
-  @SET exit_code=1
-  @GOTO FINITO
+  SET exit_code=1
+  GOTO FINITO
  )
 GOTO PROCESSING
 
@@ -106,7 +106,7 @@ GOTO PROCESSING
 @echo ------------------------------------------------------------------------------------------
 
 
-CD %1
+CD /d %1
 :: To get latest abbriviated hash from git
 :: git log -n 1  --pretty="format:%h"
 :: To get current tag
@@ -115,29 +115,32 @@ CD %1
 
 FOR /F "tokens=1 delims=" %%A in ('"!git_bin!\git.exe" describe --tags --long') do SET current_tag=%%A
 ::!current_tag! 
-echo Current Tag:       !current_tag!
 FOR /F "tokens=1 delims=" %%A in ('echo !current_tag! ^| sed "s/\(v[0-9]*\.[0-9]*\.[0-9]*\)-[0-9]*-g.*/\1/"') do SET tag_only=%%A
-echo Tag Only:          !tag_only!
 FOR /F "tokens=1 delims=" %%A in ('echo !current_tag! ^| sed "s/v\([0-9]*\).*/\1/"') do SET major_version=%%A
-echo Major Version:     !major_version!
 FOR /F "tokens=1 delims=" %%A in ('echo !current_tag! ^| sed "s/v[0-9]*\.\([0-9]*\).*/\1/"') do SET minor_version=%%A
-echo Minor Version:     !minor_version!
 FOR /F "tokens=1 delims=" %%A in ('echo !current_tag! ^| sed "s/v[0-9]*\.[0-9]*\.\([0-9]*\).*/\1/"') do SET revision=%%A
-echo Revision:          !revision!
 FOR /F "tokens=1 delims=" %%A in ('echo !current_tag! ^| sed "s/v[0-9]*\.[0-9]*\.[0-9]*-\([0-9]*\).*/\1/"') do SET commits_since_tag=%%A
-echo Commits since tag: !commits_since_tag!
 FOR /F "tokens=1 delims=" %%A in ('echo !current_tag! ^| sed "s/v[0-9]*\.[0-9]*\.[0-9]*-[0-9]*-g\(.*\)/\1/"') do SET git_hash=%%A
-echo Git Hash:          !git_hash!
+SET git_hash=!git_hash: =!
 FOR /F "tokens=1 delims=" %%A in ('"!git_bin!\git.exe" describe !tag_only! --tags --long') do SET git_tag_complete_with_hash=%%A
 FOR /F "tokens=1 delims=" %%A in ('echo !git_tag_complete_with_hash! ^| sed "s/v[0-9]*\.[0-9]*\.[0-9]*-[0-9]*-g\(.*\)/\1/"') do SET git_tag_hash=%%A
-echo Git Tag Hash:      !git_tag_hash!
+SET git_tag_hash=!git_tag_hash: =!
+
+echo   Tag Only:          !tag_only!
+echo   Current Tag:       !current_tag!
+echo   Major Version:     !major_version!
+echo   Minor Version:     !minor_version!
+echo   Revision:          !revision!
+echo   Commits since tag: !commits_since_tag!
+echo   Git Hash:          !git_hash!
+echo   Git Tag Hash:      !git_tag_hash!
 
 :: Replace parameters in file using sed
 @popd
 @sed -e "s/\$MAJOR_VERSION\$/!major_version!/" -e "s/\$MINOR_VERSION\$/!minor_version!/" -e "s/\$REVISION\$/!revision!/" -e "s/\$COMMITS_SINCE_TAG\$/!commits_since_tag!/" -e "s/\$GIT_TAG_HASH\$/!git_tag_hash!/" -e "s/\$GIT_HASH\$/!git_hash!/" <%2 >%3
 @pushd .
 
-@GOTO FINITO
+GOTO FINITO
 
 :USAGE
 @echo --------------------------------------------------------------------------------------
