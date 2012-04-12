@@ -126,19 +126,19 @@ FOR /F "tokens=1 delims=" %%A in ('"!git_bin!\git.exe" describe !tag_only! --tag
 FOR /F "tokens=1 delims=" %%A in ('echo !git_tag_complete_with_hash! ^| sed "s/v[0-9]*\.[0-9]*\.[0-9]*-[0-9]*-g\(.*\)/\1/"') do SET git_tag_hash=%%A
 SET git_tag_hash=!git_tag_hash: =!
 
-echo   Tag Only:          !tag_only!
-echo   Current Tag:       !current_tag!
-echo   Major Version:     !major_version!
-echo   Minor Version:     !minor_version!
-echo   Revision:          !revision!
-echo   Commits since tag: !commits_since_tag!
-echo   Git Hash:          !git_hash!
-echo   Git Tag Hash:      !git_tag_hash!
+@echo   Tag Only:          !tag_only!
+@echo   Current Tag:       !current_tag!
+@echo   Major Version:     !major_version!
+@echo   Minor Version:     !minor_version!
+@echo   Revision:          !revision!
+@echo   Commits since tag: !commits_since_tag!
+@echo   Git Hash:          !git_hash!
+@echo   Git Tag Hash:      !git_tag_hash!
 
 :: Replace parameters in file using sed
-@popd
-@sed -e "s/\$MAJOR_VERSION\$/!major_version!/" -e "s/\$MINOR_VERSION\$/!minor_version!/" -e "s/\$REVISION\$/!revision!/" -e "s/\$COMMITS_SINCE_TAG\$/!commits_since_tag!/" -e "s/\$GIT_TAG_HASH\$/!git_tag_hash!/" -e "s/\$GIT_HASH\$/!git_hash!/" <%2 >%3
-@pushd .
+popd
+sed -e "s/\$MAJOR_VERSION\$/!major_version!/g" -e "s/\$MINOR_VERSION\$/!minor_version!/g" -e "s/\$REVISION\$/!revision!/g" -e "s/\$COMMITS_SINCE_TAG\$/!commits_since_tag!/g" -e "s/\$GIT_TAG_HASH\$/!git_tag_hash!/g" -e "s/\$GIT_HASH\$/!git_hash!/g" <%2 >%3
+pushd .
 
 GOTO FINITO
 
@@ -161,6 +161,6 @@ GOTO FINITO
 @echo --------------------------------------------------------------------------------------
 
 :FINITO
-@EndLocal&SET exit_code=!exit_code!
-@popd
-@exit /B !exit_code!
+EndLocal&SET exit_code=!exit_code!
+popd
+exit /B !exit_code!
